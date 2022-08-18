@@ -2,14 +2,29 @@ package hash
 
 import (
 	"crypto/sha256"
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"net/http"
 	"sync"
 )
 
-type seeds struct {
+// type Seed struct {
+// 	Seed string `json:"seed"`
+// }
+
+// func (s Seed) String() string {
+// 	return fmt.Sprintf(s.Seed)
+// }
+
+type Seeds struct {
 	Seeds []string `json:"seeds"`
+}
+
+type Seed struct {
+	Seed            string `json:"seed"`
+	hash            [32]byte
+	hexadecimalhash string
 }
 
 func hash(s string) [32]byte {
@@ -17,45 +32,63 @@ func hash(s string) [32]byte {
 	return sum
 }
 
+func sha256ToHexString(hashedvalue [32]byte) string {
+	sliced := hashedvalue[:]
+	mdStr := hex.EncodeToString(sliced)
+	return mdStr
+}
+
+func hexSha256(s string) string {
+	hash3 := hash(s)
+	hex := sha256ToHexString(hash3)
+	return hex
+}
+
 func DecodeValidateHashJSON(w http.ResponseWriter, r *http.Request) {
-	var seeds seeds
-	err := json.NewDecoder(r.Body).Decode(&seeds)
+	var Seeds Seeds
+	err := json.NewDecoder(r.Body).Decode(&Seeds)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	hashSeedsAndPrintToChannel(seeds)
+	hashSeedsAndPrintToChannel(Seeds)
 
 }
 
-func hashSeedsAndPrintToChannel(seeds seeds) {
+func hashSeedsAndPrintToChannel(seeds Seeds) {
 
-	channel := make(chan [32]byte, 3)
+	channel := make(chan string)
 
 	var wg sync.WaitGroup
 
-	for _, seed := range seeds.Seeds {
+	for _, stringseed := range seeds.Seeds {
+		// var seed Seed
 		wg.Add(1)
 
-		seed2 := seed
+		seed2 := stringseed
 
 		go func() {
 			defer wg.Done()
 
-			go func() { channel <- hash(seed2) }()
+			go func() { channel <- hexSha256(seed2) }()
 
 		}()
+
+		// seed.Seed = &seed2
+		// seed.hexadecimalhash = hexSha256(seed2)
 
 	}
 
 	wg.Wait()
 
-	seed3 := <-channel
-	fmt.Println(seed3)
-	seed2 := <-channel
-	fmt.Println(seed2)
-	seed1 := <-channel
-	fmt.Println(seed1)
+	s3 := <-channel
+	fmt.Println(s3)
+	s2 := <-channel
+	fmt.Println(s2)
+	s1 := <-channel
+	fmt.Println(s1)
+	// s0 := <-channel
+	// fmt.Println(s0)
 
 }
