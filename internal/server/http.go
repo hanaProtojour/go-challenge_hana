@@ -1,7 +1,7 @@
 package server
 
 import (
-	"go_challenge/internal/hash"
+	"go-challenge_hana/internal/hash"
 	"net/http"
 
 	"github.com/gorilla/mux"
@@ -10,7 +10,8 @@ import (
 type httpServer struct {
 }
 
-func (s *httpServer) handlePost(w http.ResponseWriter, r *http.Request) {
+func (s *httpServer) HandlePost(w http.ResponseWriter, r *http.Request) {
+	w.Header().Add("Content-Type", "application/json")
 	hash.DecodeValidateHashJSON(w, r)
 
 }
@@ -18,7 +19,7 @@ func (s *httpServer) handlePost(w http.ResponseWriter, r *http.Request) {
 func NewhttpServer(addr string) *http.Server {
 	server := &httpServer{}
 	r := mux.NewRouter()
-	r.HandleFunc("/", server.handlePost).Methods("POST")
+	r.HandleFunc("/", server.HandlePost).Methods("POST")
 	return &http.Server{
 		Addr:    addr,
 		Handler: r,

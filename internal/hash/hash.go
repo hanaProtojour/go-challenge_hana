@@ -9,7 +9,7 @@ import (
 )
 
 type myJSON struct {
-	Hashed []string
+	Hashes []string
 }
 
 type Seeds struct {
@@ -80,10 +80,10 @@ func hashSeedsAndPrintToChannel(w http.ResponseWriter, seeds Seeds) {
 	hashedseeds := []string{}
 	hashedseeds = append(hashedseeds, s1.hexadecimalhash, s2.hexadecimalhash, s3.hexadecimalhash)
 
-	jsondat := &myJSON{Hashed: hashedseeds}
+	jsondat := &myJSON{Hashes: hashedseeds}
 	err := json.NewEncoder(w).Encode(jsondat)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 

@@ -1,7 +1,7 @@
 package main
 
 import (
-	"go_challenge/internal/server"
+	"go-challenge_hana/internal/server"
 )
 
 func main() {
